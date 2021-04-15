@@ -17,10 +17,10 @@ import qualified Data.Binary.Builder as Binary
 import qualified Data.ByteString as BS
 import qualified Data.Conduit as Conduit
 import qualified Data.Conduit.Combinators as Conduit
-import Network.HTTP.Client (newManager)
+import Network.HTTP.Client (newManager, responseStatus)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
 import Network.HTTP.ReverseProxy
-import Network.HTTP.Types.Status (status200)
+import Network.HTTP.Types.Status (Status (..), status200)
 import qualified Network.Wai as Wai
 import Network.Wai.Handler.Warp (Port)
 import qualified Network.Wai.Handler.Warp as Warp
@@ -62,7 +62,9 @@ runCRP cachePath port dest = do
             Just pd -> WPRProxyDest pd
             _ -> error "No destination and no cache"
     -- 'handleResponse' run when the request hit the dest
-    handleResponse request _response = Just processConduit
+    handleResponse request response = case responseStatus response of
+      (Status code _message) | 200 <= code && code < 300 -> Just processConduit
+      _ -> Nothing
       where
         fp = toFileName cachePath request
         processConduit :: MonadIO m => Conduit.ConduitT ByteString (Conduit.Flush Binary.Builder) m ()
