@@ -3,7 +3,7 @@
 [![Hackage](https://img.shields.io/hackage/v/caching-reverse-proxy.svg?logo=haskell)](https://hackage.haskell.org/package/caching-reverse-proxy)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-A caching reverse proxy to help client development.
+A caching reverse proxy to help client development powered by the [http-reverse-proxy](hackage.haskell.org/package/http-reverse-proxy) library.
 
 ## Example
 

@@ -50,7 +50,8 @@ runCRP cachePath port dest = do
     setting = defaultWaiProxySettings {wpsProcessBody = handleResponse}
     -- 'handleRequest' run when a client makes a request
     handleRequest :: Wai.Request -> IO WaiProxyResponse
-    handleRequest request = do
+    handleRequest request' = do
+      let request = request' {Wai.requestHeaders = fixupHeaders (Wai.requestHeaders request')}
       putTextLn $ "Serving: " <> show request
       let fp = toFileName cachePath request
       cached <- doesFileExist fp
@@ -61,6 +62,14 @@ runCRP cachePath port dest = do
             Just pd@(ProxyDest _ 443) -> WPRModifiedRequestSecure request pd
             Just pd -> WPRProxyDest pd
             _ -> error "No destination and no cache"
+    fixupHeaders headers = map setHost $ filter keepHeader headers
+    setHost ("Host", host) = case dest of
+      Just (ProxyDest host' port') -> ("Host", host' <> ":" <> show port')
+      Nothing -> ("Host", host)
+    setHost x = x
+    -- remove empty auth
+    keepHeader ("Authorization", "token ") = False
+    keepHeader _ = True
     -- 'handleResponse' run when the request hit the dest
     handleResponse request response = case responseStatus response of
       (Status code _message) | 200 <= code && code < 300 -> Just processConduit
