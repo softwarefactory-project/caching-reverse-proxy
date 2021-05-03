@@ -45,6 +45,7 @@ common common-options
 library
   import:              common-options
   build-depends:       base                   < 5
+                     , SHA                    < 1.7
                      , binary                 < 0.10
                      , conduit                < 1.4
                      , directory              < 1.4
